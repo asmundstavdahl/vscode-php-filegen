@@ -1,9 +1,10 @@
 {
 	"name": "vscode-php-filegen",
-	"displayName": "vscode-php-filegen",
-	"description": "Generate basic content for PHP files based on project context",
-	"version": "0.0.1",
+	"displayName": "PHP file generator",
+	"description": "Generate basic content for classes, interfaces and traits based on project context",
+	"version": "0.0.2",
 	"publisher": "asmundstavdahl",
+	"license": "MIT",
 	"repository": {
 		"url": "https://github.com/asmundstavdahl/vscode-php-filegen"
 	},
