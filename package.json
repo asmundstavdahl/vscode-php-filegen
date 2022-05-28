@@ -2,7 +2,7 @@
 	"name": "vscode-php-filegen",
 	"displayName": "PHP file generator",
 	"description": "Generate basic content for classes, interfaces and traits based on project context",
-	"version": "0.0.2",
+	"version": "0.1.0",
 	"publisher": "asmundstavdahl",
 	"license": "MIT",
 	"repository": {
@@ -16,16 +16,26 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:vscode-php-filegen.generate-namespaced"
+		"onCommand:php-filegen.generateNamespacedFile"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "vscode-php-filegen.generate-namespaced",
+				"command": "php-filegen.generateNamespacedFile",
 				"title": "Generate namespaced class/interface/trait"
 			}
-		]
+		],
+		"configuration": {
+			"title": "PHP file generator",
+			"properties": {
+				"php-filegen.composerJsonPath": {
+					"type": "string",
+					"default": "composer.json",
+					"description": "Path to composer.json, relative to project root"
+				}
+			}
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "yarn run package",

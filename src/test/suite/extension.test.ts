@@ -54,5 +54,43 @@ suite('Extension Test Suite', () => {
 				"/src/Component/A/B/C/D/E.php"
 			)
 		);
+		assert.strictEqual(
+			"",
+			ext.inferProjectRelativeNamespaceFromFilePath(
+				"/src/DirectlyInSrc.php"
+			)
+		);
+	});
+
+	test('Get project namespace from composer.json', () => {
+		assert.strictEqual(
+			"Some\\App\\",
+			ext.getProjectNamespaceFromComposerJson(
+				`{
+    "autoload": {
+        "psr-4": {
+            "Some\\\\App\\\\": "src/"
+        }
+    }
+}`
+			)
+		);
+	});
+	test('Get project namespace from composer.json (project is not first namespace)', () => {
+		assert.strictEqual(
+			"Some\\App\\",
+			ext.getProjectNamespaceFromComposerJson(
+				`{
+    "autoload": {
+        "psr-4": {
+            "Some\\\\Other\\\\Namespace\\\\": "other/",
+            "Some\\\\App\\\\": "src/"
+        }
+    }
+}`
+			)
+		);
 	});
 });
+
+// "Some\\App\\"

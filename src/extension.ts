@@ -1,7 +1,6 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import { match } from 'assert';
-import { Dir, fstat, readFileSync } from 'fs';
+import { readFileSync } from 'fs';
 import * as vscode from 'vscode';
 
 // this method is called when your extension is activated
@@ -10,31 +9,33 @@ export function activate(context: vscode.ExtensionContext) {
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('vscode-php-filegen.generate-namespaced', () => {
-		// The code you place here will be executed every time your command is executed
+	let disposable = vscode.commands.registerCommand(
+		'php-filegen.generateNamespacedFile',
+		generateNamespacedFile(context)
+	);
 
+	context.subscriptions.push(disposable);
+}
+
+// this method is called when your extension is deactivated
+export function deactivate() { }
+
+function generateNamespacedFile(context: vscode.ExtensionContext) {
+	return () => {
 		const editor = vscode.window.activeTextEditor;
 		if (editor === undefined || editor.document.isUntitled) {
 			vscode.window.showErrorMessage('No active editor for an on-disk file');
 			return;
 		}
 		const fileHasContent = editor.document.getText().length > 0;
-
 		if (fileHasContent) {
 			vscode.window.showErrorMessage('Won\'t manipulate a file with contents');
 			return;
 		}
 
 		const fileName = editor.document.fileName;
-		let srcSplit = fileName.split('/src/');
-		const fileInAutoloadDir = srcSplit.pop();
-		const projectRoot = srcSplit.join('/src/');
 
-		if (fileInAutoloadDir === undefined) {
-			throw new Error("Could not extract file's path relative to autoload root");
-		}
-
-		const projectNamespace = getProjectNamespace(projectRoot);
+		const projectNamespace = getProjectNamespace();
 		const fileNamespace = inferProjectRelativeNamespaceFromFilePath(fileName);
 		const className = inferClassNameFromFilePath(fileName);
 		const classInterfaceOrTrait =
@@ -53,7 +54,7 @@ export function activate(context: vscode.ExtensionContext) {
 	}`
 				: '';
 
-		const namespace = `${projectNamespace}\\${fileNamespace}`;
+		const namespace = projectNamespace?.replace(/\\$/, "") + (fileNamespace ? "\\" : "") + fileNamespace;
 
 		editor.insertSnippet(
 			new vscode.SnippetString(
@@ -68,32 +69,13 @@ namespace ${namespace};
 	${maybeConstructorSnippet}\$0
 }
 `));
-	});
-
-	context.subscriptions.push(disposable);
+	};
 }
 
-// this method is called when your extension is deactivated
-export function deactivate() { }
-
-function getProjectNamespace(projectRoot: string) {
-	const composerJson_ = readFileSync(`${projectRoot}/composer.json`).toString();
-	const composerJson = JSON.parse(composerJson_);
-	const autoload = composerJson.autoload;
-	const psr4 = autoload["psr-4"];
-
-	return Object.keys(psr4)[0];
-}
-
-function getFileNamespace(fileInAutoloadDir: string) {
-	return fileInAutoloadDir
-		.split("/")
-		.slice(0, -1)
-		.join("\\");
-}
-
-function getFileClassName(fileInAutoloadDir: string) {
-	return fileInAutoloadDir.split("/").slice(-1)[0].split(".").slice(0, 1)[0];
+export function getProjectNamespace() {
+	return getProjectNamespaceFromComposerJson(
+		readFileSync(getPathToComposerJson()).toString()
+	);
 }
 
 export function inferClassNameFromFilePath(filePath: string): string {
@@ -121,4 +103,37 @@ export function inferProjectRelativeNamespaceFromFilePath(filePath: string): str
 	}
 
 	return namespaceComponents.join("\\");
+}
+
+function getPathToComposerJson(): string {
+	const fromConfig = vscode.workspace
+		.getConfiguration('php-filegen')
+		.get<string>('composerJsonPath');
+
+	const wsFolders = vscode.workspace.workspaceFolders;
+	if (wsFolders === undefined) {
+		throw new Error("Can't get path to composer.json if there is no folder open");
+	}
+
+	const workDir = wsFolders[0].uri.path;
+
+	return workDir + "/" + (fromConfig ?? "/composer.json");
+}
+
+export function getProjectNamespaceFromComposerJson(composerJsonContent: string): string | undefined {
+	const json = JSON.parse(composerJsonContent);
+	const autoload = json.autoload;
+	const psr4 = autoload["psr-4"];
+
+	for (const key in psr4) {
+		if (Object.prototype.hasOwnProperty.call(psr4, key)) {
+			const path: string = psr4[key];
+
+			if (path.startsWith("src")) {
+				return key;
+			}
+		}
+	}
+
+	return undefined;
 }

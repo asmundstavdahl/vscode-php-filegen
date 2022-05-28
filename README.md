@@ -30,6 +30,10 @@ Quirky base namespace inference from composer.json.
 
 Release nooooooooootesah.
 
+### 0.1.0
+
+New setting for composer.json location.
+
 ### 0.0.1
 
 Initial release.
