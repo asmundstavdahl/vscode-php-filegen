@@ -2,6 +2,10 @@
 
 Notable changes will be documented in this file.
 
+## [v0.1.1] 2022-05-28
+### Added
+- add icon
+
 ## [v0.1.0] 2022-05-28
 ### Breaking changes
 - generate command renamed to "php-filegen.generateNamespacedFile"
