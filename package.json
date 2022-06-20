@@ -3,7 +3,7 @@
 	"displayName": "PHP file generator",
 	"description": "Generate basic content for classes, interfaces and traits based on project context",
 	"icon": "assets/images/ppppppphp.png",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"publisher": "asmundstavdahl",
 	"license": "MIT",
 	"repository": {

@@ -55,15 +55,14 @@ function generateNamespacedFile(context: vscode.ExtensionContext) {
 				: '';
 
 		const namespace = projectNamespace?.replace(/\\$/, "") + (fileNamespace ? "\\" : "") + fileNamespace;
+		const maybeNamespace = namespace ? `\nnamespace ${namespace};\n` : '';
 
 		editor.insertSnippet(
 			new vscode.SnippetString(
 				`<?php
 
 declare(strict_types=1);
-
-namespace ${namespace};
-
+${maybeNamespace}
 \${05:${classInterfaceOrTrait}} ${className}\${10:}
 {
 	${maybeConstructorSnippet}\$0
